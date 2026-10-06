@@ -22,4 +22,74 @@ class User
 
         return $conn;
     }
+
+    public function registerUser(
+        string $username,
+        string $password,
+        string $email,
+        string $role
+    ): bool {
+        $conn = $this->dbConnect();
+
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+        $sql = "INSERT INTO user (username, password, email, role)
+                VALUES (:username, :password, :email, :role)";
+
+        $stmt = $conn->prepare($sql);
+
+        return $stmt->execute([
+            ':username' => $username,
+            ':password' => $hashedPassword,
+            ':email' => $email,
+            ':role' => $role
+        ]);
+    }
+
+    public function loginUser(string $email, string $password): bool
+    {
+        $conn = $this->dbConnect();
+
+        $sql = "SELECT * FROM user WHERE email = :email";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([
+            ':email' => $email
+        ]);
+
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($user && password_verify($password, $user['password'])) {
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['role'] = $user['role'];
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isLoggedin(): bool
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        return isset($_SESSION['user_id']);
+    }
+
+    public function logout(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        session_unset();
+        session_destroy();
+    }
 }
