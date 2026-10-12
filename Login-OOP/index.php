@@ -1,6 +1,7 @@
 <?php
 
-// login oop afmaken 9015493
+// Login OOP bonusopdracht 9015493
+require_once __DIR__ . '/Database.php';
 require_once __DIR__ . '/User.php';
 
 $user = new User();
@@ -16,7 +17,7 @@ if (isset($_POST['register'])) {
     if ($user->registerUser($username, $password, $email, $role)) {
         $message = 'Registratie gelukt!';
     } else {
-        $message = 'Registratie mislukt.';
+        $message = 'Registratie mislukt. Dit e-mailadres is mogelijk al geregistreerd.';
     }
 }
 
