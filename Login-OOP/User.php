@@ -31,8 +31,21 @@ class User
     ): bool {
         $conn = $this->dbConnect();
 
+        // Controleren of het e-mailadres al bestaat
+        $sql = "SELECT id FROM user WHERE email = :email";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([
+            ':email' => $email
+        ]);
+
+        if ($stmt->fetch()) {
+            return false;
+        }
+
+        // Wachtwoord beveiligen
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
+        // Nieuwe gebruiker toevoegen
         $sql = "INSERT INTO user (username, password, email, role)
                 VALUES (:username, :password, :email, :role)";
 
